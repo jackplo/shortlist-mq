@@ -2,6 +2,9 @@ import { Queue, Worker } from "bullmq";
 import connection from "../connection";
 import { BATCH_SIZE, REDIS_KEY } from "../constants/constants";
 import { pullData } from "../pullData";
+import { DBRestaurant } from "../models/DBrestaurant";
+import { getPlaceDetailsWithTextSearch } from "./googleService";
+import { insertIntoDatabase } from "./databaseService";
 
 const queue = new Queue('fetchData', { connection });
 connection.set(REDIS_KEY, 0);
@@ -23,14 +26,25 @@ export const scheduleFetchJob: () => Promise<void> = async () => {
     const { data, lastIndex } = await pullData(currentIndex);
 
     console.log(`Processed ${data.length} valid entries.`);
-    //console.log(data)
     const newIndex = lastIndex;
     await saveIndex(newIndex);
+
+    let validRestaurnts: DBRestaurant[] = [];
+    for (const restaurant of data) {
+      const details = await getPlaceDetailsWithTextSearch(restaurant)
+      if (details) {
+        validRestaurnts.push(details);
+      }
+    }
+    
+    if (validRestaurnts.length > 0) {
+      await insertIntoDatabase(validRestaurnts);
+    }
 }
 
 export const scheduleRecurringJob = async () => {
     console.log("scheduling job")
-    await queue.add('fetchData', {}, { repeat: { every: 1000 } });
+    await queue.add('fetchData', {}, { repeat: { every: 60 * 1000 } });
 };
 
 export const startWorker = () => {

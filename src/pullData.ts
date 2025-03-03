@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import ABCResponse from "./models/ABCResponse";
+import { BATCH_SIZE } from "./constants/constants";
 
 export const pullData = async (index: number) => {
     const url = "https://a816-health.nyc.gov/ABCEatsRestaurants/App/GetEntitiesByBoro/Manhattan"
@@ -27,7 +28,7 @@ export const pullData = async (index: number) => {
 
                 return restaurant;
             })
-            .slice(0, 100);
+            .slice(0, BATCH_SIZE);
 
             dataForUpload =  { data: validRestaurants, lastIndex };
         })
