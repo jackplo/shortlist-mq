@@ -1,13 +1,13 @@
 import { Queue, Worker } from "bullmq";
 import connection from "../connection";
-import { BATCH_SIZE, REDIS_KEY } from "../constants/constants";
+import { REDIS_KEY } from "../constants/constants";
 import { pullData } from "../pullData";
 import { DBRestaurant } from "../models/DBrestaurant";
 import { getPlaceDetailsWithTextSearch } from "./googleService";
 import { insertIntoDatabase } from "./databaseService";
 
 const queue = new Queue('fetchData', { connection });
-connection.set(REDIS_KEY, 0);
+process.env.DEV_MODE ?? connection.set(REDIS_KEY, 0);
 
 export const getSavedIndex: () => Promise<number> = async () => {
     const index = await connection.get(REDIS_KEY);
