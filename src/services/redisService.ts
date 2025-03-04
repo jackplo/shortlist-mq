@@ -7,7 +7,10 @@ import { getPlaceDetailsWithTextSearch } from "./googleService";
 import { insertIntoDatabase } from "./databaseService";
 
 const queue = new Queue('fetchData', { connection });
-process.env.DEV_MODE ?? connection.set(REDIS_KEY, 0);
+
+if (process.env.DEV_MODE === "TRUE") {
+  connection.set(REDIS_KEY, 0);
+}
 
 export const getSavedIndex: () => Promise<number> = async () => {
     const index = await connection.get(REDIS_KEY);
@@ -44,7 +47,7 @@ export const scheduleFetchJob: () => Promise<void> = async () => {
 
 export const scheduleRecurringJob = async () => {
     console.log("scheduling job")
-    await queue.add('fetchData', {}, { repeat: { every: 60 * 1000 } });
+    await queue.add('fetchData', {}, { repeat: { every: parseInt(process.env.REPEAT_TIME!) } });
 };
 
 export const startWorker = () => {

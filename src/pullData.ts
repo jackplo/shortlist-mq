@@ -18,12 +18,14 @@ export const pullData = async (index: number) => {
             .filter((restaurant: ABCResponse, idx) => {
                 if (count >= 100) return false;
 
-                const isValid = restaurant.Grade === "A" || restaurant.Grade === "Pending";
+                const isValid = restaurant.Grade === "A" || restaurant.Grade === "B" || restaurant.Grade === "Pending";
 
-                if (isValid) {
-                    lastIndex = idx + index;
-                    count++;
+                if (!isValid) {
+                    return false;
                 }
+
+                lastIndex = idx + index;
+                count++;
 
                 return restaurant;
             })
