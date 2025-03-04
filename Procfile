@@ -1,0 +1,1 @@
+worker: node --env-file=.env dist/index.js
